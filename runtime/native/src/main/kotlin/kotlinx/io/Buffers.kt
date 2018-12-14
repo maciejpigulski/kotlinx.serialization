@@ -69,6 +69,13 @@ actual class ByteBuffer private constructor(private var backingArray: ByteArray)
     private fun transformToInt(vararg bytes: Byte, bytesToRead: Int): Int {
         if (order == ByteOrder.LITTLE_ENDIAN) {
             var r: Int = 0
+            r = r or (((bytes.getOrNull(0) ?: 0).toInt() and 0xFF) shl 0)
+            r = r or (((bytes.getOrNull(1) ?: 0).toInt() and 0xFF) shl 8)
+            r = r or (((bytes.getOrNull(2) ?: 0).toInt() and 0xFF) shl 16)
+            r = r or (((bytes.getOrNull(3) ?: 0).toInt() and 0xFF) shl 24)
+            return r
+        } else {
+            var r: Int = 0
             if (bytesToRead > 2) {
                 r = r or (((bytes.getOrNull(0) ?: 0).toInt() and 0xFF) shl 24)
                 r = r or (((bytes.getOrNull(1) ?: 0).toInt() and 0xFF) shl 16)
@@ -76,13 +83,6 @@ actual class ByteBuffer private constructor(private var backingArray: ByteArray)
             val offset = if (bytesToRead == 2) 0 else 2
             r = r or (((bytes.getOrNull(offset) ?: 0).toInt() and 0xFF) shl 8)
             r = r or (((bytes.getOrNull(offset + 1) ?: 0).toInt() and 0xFF) shl 0)
-            return r
-        } else {
-            var r: Int = 0
-            r = r or (((bytes.getOrNull(0) ?: 0).toInt() and 0xFF) shl 0)
-            r = r or (((bytes.getOrNull(1) ?: 0).toInt() and 0xFF) shl 8)
-            r = r or (((bytes.getOrNull(2) ?: 0).toInt() and 0xFF) shl 16)
-            r = r or (((bytes.getOrNull(3) ?: 0).toInt() and 0xFF) shl 24)
             return r
         }
     }
@@ -93,19 +93,19 @@ actual class ByteBuffer private constructor(private var backingArray: ByteArray)
         val b2 = (i ushr 8).toByte()
         val b3 = (i).toByte()
         if (order == ByteOrder.LITTLE_ENDIAN) {
-            if (bytesToWrite > 2) {
-                backingArray[idx++] = b0
-                backingArray[idx++] = b1
-            }
-            backingArray[idx++] = b2
-            backingArray[idx++] = b3
-        } else {
             backingArray[idx++] = b3
             if (bytesToWrite < 2) return
             backingArray[idx++] = b2
             if (bytesToWrite < 4) return
             backingArray[idx++] = b1
             backingArray[idx++] = b0
+        } else {
+            if (bytesToWrite > 2) {
+                backingArray[idx++] = b0
+                backingArray[idx++] = b1
+            }
+            backingArray[idx++] = b2
+            backingArray[idx++] = b3
         }
     }
 
